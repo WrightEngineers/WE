@@ -1,178 +1,90 @@
-/* =================================
-------------------------------------
-	Template Name: Industry.INC 
-	Description: Industry.INC HTML Template
-	Author: colorlib
-	Author URI: https://www.colorlib.com/
-	Version: 1.0
-	Created: colorlib
- ------------------------------------
- ====================================*/
-
-
-'use strict';
-
-$(window).on('load', function() {
-	/*------------------
-		Preloder
-	--------------------*/
-	$(".loader").fadeOut();
-	$("#preloder").delay(400).fadeOut("slow");
-
+// Footer year
+document.querySelectorAll("[data-year]").forEach(function (el) {
+  el.textContent = new Date().getFullYear();
 });
 
-(function($) {
-	/*------------------
-		Navigation
-	--------------------*/
-	$('.site-nav-menu > ul').slicknav({
-		appendTo:'.header-section',
-		closedSymbol: '<i class="fa fa-angle-down"></i>',
-		openedSymbol: '<i class="fa fa-angle-up"></i>',
-		allowParentLinks: true
-	});
+// Contact form: send without leaving the page; falls back to a normal submit if anything fails.
+var form = document.getElementById("quote-form");
+if (form && window.fetch) {
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var status = document.getElementById("form-status");
+    var button = form.querySelector("button[type=submit]");
+    button.disabled = true;
+    status.className = "form-status";
+    status.textContent = "Sending…";
+    fetch(form.action, {
+      method: "POST",
+      body: new FormData(form),
+      headers: { Accept: "application/json" }
+    }).then(function (r) {
+      if (r.ok) {
+        form.reset();
+        status.className = "form-status ok";
+        status.textContent = "Message sent. We will reply by email.";
+      } else {
+        throw new Error("bad response");
+      }
+    }).catch(function () {
+      status.className = "form-status err";
+      status.textContent = "The message could not be sent. Please email us directly at the address on this page.";
+    }).finally(function () {
+      button.disabled = false;
+    });
+  });
+}
 
-	$('.slicknav_nav').append('<li class="search-switch-warp"><button class="search-switch"><i class="fa fa-search"></i></button></li>');
+var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Services dropdown: tap or click the arrow, Escape or an outside click closes it.
+document.querySelectorAll(".has-sub").forEach(function (item) {
+  var btn = item.querySelector(".sub-toggle");
+  function setOpen(open) {
+    item.classList.toggle("open", open);
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    setOpen(!item.classList.contains("open"));
+  });
+  document.addEventListener("click", function (e) {
+    if (!item.contains(e.target)) setOpen(false);
+  });
+  item.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { setOpen(false); btn.focus(); }
+  });
+});
 
-	/*------------------
-		Search model
-	--------------------*/
-	$('.search-switch').on('click', function() {
-		$('.search-model').fadeIn(400);
-	});
+// Scroll reveal: items ease in as they come into view.
+if (!reduce && "IntersectionObserver" in window) {
+  var groups = [".trio > div", ".steps li", ".svc", ".statements li", ".facts", ".table-wrap", ".details div", "form"];
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+    });
+  }, { threshold: 0.12 });
+  groups.forEach(function (sel) {
+    document.querySelectorAll(sel).forEach(function (el, i) {
+      el.classList.add("reveal");
+      el.style.transitionDelay = Math.min(i, 4) * 90 + "ms";
+      io.observe(el);
+    });
+  });
+}
 
-	$('.search-close-switch').on('click', function() {
-		$('.search-model').fadeOut(400,function(){
-			$('#search-input').val('');
-		});
-	});
-
-
-	/*------------------
-		Background Set
-	--------------------*/
-	$('.set-bg').each(function() {
-		var bg = $(this).data('setbg');
-		$(this).css('background-image', 'url(' + bg + ')');
-	});
-
-
-	/*------------------
-		Hero Slider
-	--------------------*/
-	$('.hero-slider').owlCarousel({
-		nav: true,
-		dots: false,
-		loop: true,
-		navText: ['<i class="fa fa-angle-left"></i>','<i class="fa fa-angle-right"></i>'],
-		autoplay: true,
-		items: 1,
-		animateOut: 'fadeOut',
-    	animateIn: 'fadeIn',
-	});
-
-	/*------------------
-		Brands Slider
-	--------------------*/
-	$('#client-carousel').owlCarousel({
-		nav: false,
-		loop: true,
-		margin:20,
-		autoplay: true,
-		responsive:{
-			0:{
-				items:2,
-				margin: 0
-			},
-			600:{
-				items:3
-			},
-			800:{
-				items:4
-			},
-			992:{
-				items:4
-			},
-			1200:{
-				items:5
-			},
-		}
-	});
-
-	/*---------------------
-		Testimonial Slider
-	----------------------*/
-	$('.testimonial-slider').owlCarousel({
-		nav: false,
-		dots: true,
-		loop: true,
-		autoplay: true,
-		items: 1,
-	});
-
-	/*------------------
-		Image Popup
-	--------------------*/
-	$('.video-popup').magnificPopup({
-		type: 'iframe'
-	});
-	
-	/*------------------
-		Accordions
-	--------------------*/
-	$('.panel-link').on('click', function (e) {
-		$('.panel-link').parent('.panel-header').removeClass('active');
-		var $this = $(this).parent('.panel-header');
-		if (!$this.hasClass('active')) {
-			$this.addClass('active');
-		}
-		e.preventDefault();
-	});
-
-	/*------------------
-		Progress Bar
-	--------------------*/
-	$('.progress-bar-style').each(function() {
-		var progress = $(this).data("progress");
-		var prog_width = progress + '%';
-		if (progress <= 100) {
-			$(this).append('<div class="bar-inner" style="width:' + prog_width + '"><span>' + prog_width + '</span></div>');
-		}
-		else {
-			$(this).append('<div class="bar-inner" style="width:100%"><span>' + prog_width + '</span></div>');
-		}
-	});
-
-	/*------------------
-		Circle progress
-	--------------------*/
-	$('.circle-progress').each(function() {
-		var cpvalue = $(this).data("cpvalue");
-		var cpcolor = $(this).data("cpcolor");
-		var cpid 	= $(this).data("cpid");
-
-		$(this).prepend('<div class="'+ cpid +' circle-warp"><h2>'+ cpvalue +'%</h2></div>');
-
-		if (cpvalue < 100) {
-
-			$('.' + cpid).circleProgress({
-				value: '0.' + cpvalue,
-				size: 112,
-				thickness: 3,
-				fill: cpcolor,
-				emptyFill: "rgba(0, 0, 0, 0)"
-			});
-		} else {
-			$('.' + cpid).circleProgress({
-				value: 1,
-				size: 112,
-				thickness: 3,
-				fill: cpcolor,
-				emptyFill: "rgba(0, 0, 0, 0)"
-			});
-		}
-
-	});
-
-})(jQuery);
+// Page transition: fade out before moving to another page of the site.
+if (!reduce) {
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[href]");
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    if (a.target && a.target !== "_self") return;
+    var url = new URL(a.href, location.href);
+    if (url.origin !== location.origin && location.protocol !== "file:") return;
+    if (!/\.html?$|\/$/.test(url.pathname) || url.pathname === location.pathname) return;
+    if (a.hasAttribute("download") || a.protocol === "mailto:" || a.protocol === "tel:") return;
+    e.preventDefault();
+    document.body.classList.add("leaving");
+    setTimeout(function () { location.href = a.href; }, 220);
+  });
+  window.addEventListener("pageshow", function () { document.body.classList.remove("leaving"); });
+}
